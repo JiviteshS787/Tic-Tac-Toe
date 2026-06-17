@@ -27,14 +27,22 @@ export function checkWinner(squares){
     const[a,b,c] = combinations[i];
     let find = squares[a];
     if(find !== null && find === squares[b] && find === squares[c]){
-      return squares[a];
+      return [a,b,c];
     }
   }
   return null;
 }
 
-export function Square({ value, onSquareClick }){
-  return <button className="square" onClick={onSquareClick}> {value} </button>;
+export function Square({ value, onSquareClick, highlight }){
+  return <button className={(value==='X'? 'x' : value==='O'?'o':'square') + (highlight ? ' highlight' : '')} onClick={onSquareClick}> {value} </button>;
+}
+
+export function Reset({onResetClick}){
+  return <>
+    <button className="reset" onClick={onResetClick}>
+      Reset Game
+    </button>
+  </>
 }
 
 export default function Board(){
@@ -43,7 +51,7 @@ export default function Board(){
 
   function handleClick(i){
     if(squares[i] === null && !checkWinner(squares) && !checkDraw(squares)){
-      const nextSquares = squares.slice();
+      const nextSquares = [... squares];
       if(xIsNext){
         nextSquares[i] = 'X';
       } else {
@@ -57,7 +65,7 @@ export default function Board(){
   const status = checkWinner(squares);
   let winner;
   if(status){
-    winner = 'Winner: ' + status;
+    winner = 'Winner: ' + squares[status[0]];
   }else{
     winner = 'Next player: ' + (xIsNext ? 'X' : 'O');
   }
@@ -68,21 +76,25 @@ export default function Board(){
     <div className="status">{draw? 'Draw' : winner}</div>
     <div className="background">
       <div className="boardRow"> 
-        <Square value={squares[0]} onSquareClick = {() => handleClick(0)}/>
-        <Square value={squares[1]} onSquareClick = {() => handleClick(1)}/>
-        <Square value={squares[2]} onSquareClick = {() => handleClick(2)}/>
+        <Square value={squares[0]} onSquareClick = {() => handleClick(0)} highlight={status?.includes(0)}/>
+        <Square value={squares[1]} onSquareClick = {() => handleClick(1)} highlight={status?.includes(1)}/>
+        <Square value={squares[2]} onSquareClick = {() => handleClick(2)} highlight={status?.includes(2)}/>
       </div>
       <div className="boardRow"> 
-        <Square value={squares[3]} onSquareClick = {() => handleClick(3)}/>
-        <Square value={squares[4]} onSquareClick = {() => handleClick(4)}/>
-        <Square value={squares[5]} onSquareClick = {() => handleClick(5)}/>
+        <Square value={squares[3]} onSquareClick = {() => handleClick(3)} highlight={status?.includes(3)}/>
+        <Square value={squares[4]} onSquareClick = {() => handleClick(4)} highlight={status?.includes(4)}/>
+        <Square value={squares[5]} onSquareClick = {() => handleClick(5)} highlight={status?.includes(5)}/>
       </div>
       <div className="boardRow">
-        <Square value={squares[6]} onSquareClick = {() => handleClick(6)}/>
-        <Square value={squares[7]} onSquareClick = {() => handleClick(7)}/>
-        <Square value={squares[8]} onSquareClick = {() => handleClick(8)}/>
+        <Square value={squares[6]} onSquareClick = {() => handleClick(6)} highlight={status?.includes(6)}/>
+        <Square value={squares[7]} onSquareClick = {() => handleClick(7)} highlight={status?.includes(7)}/>
+        <Square value={squares[8]} onSquareClick = {() => handleClick(8)} highlight={status?.includes(8)}/>
       </div>
     </div>
+    <Reset onResetClick={() => {
+        setSquares(Array(9).fill(null));
+        setXIsNext(true);
+      }} />
   </>
 
 

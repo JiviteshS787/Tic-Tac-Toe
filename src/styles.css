@@ -21,6 +21,27 @@
   color:black;
 }
 
+.x{
+  padding:10px;
+  border: 1px solid black;
+  background-color: white;
+  color:rgb(184, 40, 40);
+  font-size:25px;
+  font-weight: bold;
+}
+.o{
+  padding:10px;
+  border: 1px solid black;
+  background-color: white;
+  color:rgb(17, 92, 17);
+  font-size:25px;
+  font-weight: bold;
+}
+
+.highlight{
+  background-color: yellow;
+}
+
 .status{
   color:white;
   margin-top: 10px;
@@ -28,4 +49,16 @@
   font-size: 20px;
   font-weight: bold;
   text-align: left;
+}
+
+.reset{
+  display:inline-block;
+  width:fit-content;
+  margin-top: 20px;
+  margin-left: 70px;
+  padding: 10px;
+  font-size: 10px;
+  font-weight: bold;
+  color:black;
+  background-color: white;
 }
