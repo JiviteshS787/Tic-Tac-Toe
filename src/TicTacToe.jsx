@@ -1,6 +1,16 @@
 import { useState } from 'react'
 import './styles.css'
 
+
+export function checkDraw(squares){
+  for(let i =0; i < squares.length; i ++){
+    if(squares[i] === null){
+      return false;
+    }
+  }
+  return true;
+}
+
 export function checkWinner(squares){
   const combinations= [
     [0,1,2],
@@ -32,7 +42,7 @@ export default function Board(){
   const [squares, setSquares] = useState(Array(9).fill(null));
 
   function handleClick(i){
-    if(squares[i] === null && !checkWinner(squares)){
+    if(squares[i] === null && !checkWinner(squares) && !checkDraw(squares)){
       const nextSquares = squares.slice();
       if(xIsNext){
         nextSquares[i] = 'X';
@@ -52,8 +62,10 @@ export default function Board(){
     winner = 'Next player: ' + (xIsNext ? 'X' : 'O');
   }
 
+  const draw = checkDraw(squares) && !status;
+
   return<>
-    <div className="status">{winner}</div>
+    <div className="status">{draw? 'Draw' : winner}</div>
     <div className="background">
       <div className="boardRow"> 
         <Square value={squares[0]} onSquareClick = {() => handleClick(0)}/>
