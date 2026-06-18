@@ -1,8 +1,67 @@
 import { useState } from 'react'
 import './styles.css'
 
-export function playAI(squares){
+export function checkWins({ squares }){
+    let count = {};
+    const combinations= [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+  ];
+  for(let i=0; i<combinations.length; i++){
+    let [a,b,c] = combinations[i];
+    if(squares[a] === squares[b] && squares[a] === 'O' && squares[c] === null){
+        count[c] = (count[c] || 0) + 1;
+    }else if(squares[a] === squares[c] && squares[a] === 'O' && squares[b] === null){
+        count[b] = (count[b] || 0) + 1;
+    }else if(squares[b] === squares[c] && squares[b] === 'O' && squares[a] === null){
+        count[a] = (count[a] || 0) + 1;
+    }
+  }
+}
 
+export function checkBlock({ squares }){
+    let count={};
+    const combinations= [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+  ];
+  for(let i=0; i<combinations.length; i ++){
+    let [a,b,c] = combinations[i];
+    if(squares[a] === squares[b] && squares[a] =='X' && squares[c] === null){
+        count[c] = (count[c] || 0) + 1;
+    }else if(squares[a] === squares[c] && squares[a] =='X' && squares[b] === null){
+        count[b] = (count[b] || 0) + 1;
+    }else if(squares[b] === squares[c] && squares[b] =='X' && squares[a] === null){
+        count[a] = (count[a] || 0) + 1;
+    }
+  }
+  // call checkWins with squares, and then check if anything in our count map matches an entry in the returned
+  // wins map, if yes block off that square. Else check which block in the count map blocks the most possible wins
+  // and block off that square, if all the same --> return;
+  // Will call checkWins, later as a block is not the right play.
+}
+
+
+export function playAI(squares){
+    let randomChoose = Math.floor(Math.random()*9);
+    const newSquares = [... squares];
+    while(newSquares[randomChoose] !== null){
+        randomChoose = Math.floor(Math.random()*9);
+    }
+    newSquares[randomChoose] = 'O';
+    return newSquares;
 }
 
 export function checkDraw(squares){
@@ -51,17 +110,34 @@ export function Reset({onResetClick}){
 export default function Board(){
   const [xIsNext, setXIsNext] = useState(true);
   const [squares, setSquares] = useState(Array(9).fill(null));
+  const [AIMode, setAIMode] = useState(true);
 
   function handleClick(i){
     if(squares[i] === null && !checkWinner(squares) && !checkDraw(squares)){
-      const nextSquares = [... squares];
-      if(xIsNext){
+        const nextSquares = [... squares];
+      
         nextSquares[i] = 'X';
-      } else {
-        nextSquares[i] = 'O';
-      }
-      setSquares(nextSquares);
-      setXIsNext(!xIsNext);
+
+        const status = checkWinner(nextSquares);
+        const draw = checkDraw(nextSquares) && !status;
+
+        setSquares(nextSquares);
+
+        if(status || draw){
+            return;
+        }
+
+        setXIsNext(false); //Edit here, !xIsNext
+
+        if(AIMode){
+            setTimeout(() => {
+                const aiMove = playAI(nextSquares);
+                if(!checkWinner(nextSquares) && !checkDraw(nextSquares)) {
+                    setSquares(aiMove);
+                    setXIsNext(true);
+                }
+            }, 400); //Edit here, !xIsNext
+        }
     }
   }
 
