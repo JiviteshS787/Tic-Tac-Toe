@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './styles.css'
 
-export function checkWins({ squares }){
+export function checkWins(squares){
     let count = {};
     const combinations= [
     [0,1,2],
@@ -23,9 +23,10 @@ export function checkWins({ squares }){
         count[a] = (count[a] || 0) + 1;
     }
   }
+  return count;
 }
 
-export function checkBlock({ squares }){
+export function checkBlock(squares){
     let count={};
     const combinations= [
     [0,1,2],
@@ -47,12 +48,72 @@ export function checkBlock({ squares }){
         count[a] = (count[a] || 0) + 1;
     }
   }
-  // call checkWins with squares, and then check if anything in our count map matches an entry in the returned
-  // wins map, if yes block off that square. Else check which block in the count map blocks the most possible wins
-  // and block off that square, if all the same --> return;
-  // Will call checkWins, later as a block is not the right play.
 }
 
+export function bestBlock(count){
+  let bestMove = null;
+  let max = -1;
+  for(let key in count){
+    if(count[key] > max){
+      max = count[key];
+      bestMove = key;
+    }
+  }
+  return bestMove !== null ? bestMove : null;
+}
+
+//Work on this
+export function regularOption(squares){
+  const combinations= [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+  ];
+  if(squares[4] === null){
+    return 4;
+  }
+  for(let i = 0; i < combinations.length; i++){
+    let [a,b,c] = combinations[i];
+    if(combinations[a] === 'O' || combinations[b] === 'O' || combinations[c] === 'O'){
+
+    }
+  }
+}
+
+export function chooseMove(squares){
+  const blocks = checkBlock(squares);
+  const wins = checkWins(squares);
+
+  // Can AI WIN and BLOCK?
+  for(let key in wins){
+    if(blocks[key]){
+      return Number(key);
+    }
+  }
+
+  // Can AI WIN
+  if(Object.keys(wins).length > 0){
+    return Number(Object.keys(wins)[0]);
+  }
+
+  // Can AI BLOCK
+  if(Object.keys(blocks).length > 0){
+    const bestOption = bestBlock(blocks);
+    if(bestOption !== null){
+      return Number(bestOption);
+    }else{
+      return Number(Object.keys(blocks)[0]);
+    }
+  }
+
+  // Regular Move
+
+}
 
 export function playAI(squares){
     let randomChoose = Math.floor(Math.random()*9);
