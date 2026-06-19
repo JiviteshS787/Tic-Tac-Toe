@@ -232,7 +232,7 @@ export default function Board({playerStarts}){
     clearTimeout(timerRef.current);
     setSquares(Array(9).fill(null));
     setXIsNext(playerStarts);
-}
+  }
 
   function handleClick(i){
     if(squares[i] === null && !checkWinner(squares) && !checkDraw(squares) && xIsNext){

@@ -2,7 +2,16 @@ import { useState } from 'react'
 import './styles.css'
 
 export function playAI(squares){
-
+  if(squares[4] === null){
+    return 4;
+  }else{
+    let move = Math.floor(Math.random()*9);
+    while(squares[move] !== null){
+      move = Math.floor(Math.random()*9);
+    }
+    return move;
+  }
+  return null;
 }
 
 export function checkDraw(squares){
@@ -52,16 +61,34 @@ export default function Board(){
   const [xIsNext, setXIsNext] = useState(true);
   const [squares, setSquares] = useState(Array(9).fill(null));
 
+  function resetGame() {
+    setSquares(Array(9).fill(null));
+    setXIsNext(true);
+  }
+
   function handleClick(i){
     if(squares[i] === null && !checkWinner(squares) && !checkDraw(squares)){
       const nextSquares = [... squares];
       if(xIsNext){
         nextSquares[i] = 'X';
-      } else {
+      }/* else {
         nextSquares[i] = 'O';
-      }
+      }*/
       setSquares(nextSquares);
-      setXIsNext(!xIsNext);
+      setXIsNext(false);
+
+      // Random picking code
+      const status = checkWinner(nextSquares);
+      const draw = checkDraw(nextSquares) && !status
+      if(!status && !draw){
+        setTimeout(()=>{
+          const aiMove = playAI(nextSquares);
+          const aiSquares = [...nextSquares];
+          aiSquares[aiMove] = 'O';
+          setSquares(aiSquares);
+          setXIsNext(true);
+        }, 400);
+      }
     }
   }
 
@@ -76,8 +103,8 @@ export default function Board(){
   const draw = checkDraw(squares) && !status;
 
   return<>
-    <div className="status">{draw? 'Draw' : winner}</div>
     <div className="background">
+      <div className="status">{draw? 'Draw' : winner}</div>
       <div className="boardRow"> 
         <Square value={squares[0]} onSquareClick = {() => handleClick(0)} highlight={status?.includes(0)}/>
         <Square value={squares[1]} onSquareClick = {() => handleClick(1)} highlight={status?.includes(1)}/>
@@ -93,11 +120,8 @@ export default function Board(){
         <Square value={squares[7]} onSquareClick = {() => handleClick(7)} highlight={status?.includes(7)}/>
         <Square value={squares[8]} onSquareClick = {() => handleClick(8)} highlight={status?.includes(8)}/>
       </div>
+      <Reset onResetClick={resetGame} />
     </div>
-    <Reset onResetClick={() => {
-        setSquares(Array(9).fill(null));
-        setXIsNext(true);
-      }} />
   </>
 
 
