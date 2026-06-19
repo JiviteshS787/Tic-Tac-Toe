@@ -3,17 +3,9 @@ import './styles.css'
 
 // Check possile future wins granted current grid
 export function checkWins(squares){
-    let count = {};
-    const combinations= [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-  ];
+  let count = {};
+  const combinations= [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+
   for(let i=0; i<combinations.length; i++){
     let [a,b,c] = combinations[i];
     if(squares[a] === squares[b] && squares[a] === 'O' && squares[c] === null){
@@ -29,17 +21,9 @@ export function checkWins(squares){
 
 // Check possible future blocks granted current grid
 export function checkBlock(squares){
-    let count={};
-    const combinations= [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-  ];
+  let count={};
+  const combinations= [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+
   for(let i=0; i<combinations.length; i ++){
     let [a,b,c] = combinations[i];
     if(squares[a] === squares[b] && squares[a] =='X' && squares[c] === null){
@@ -66,6 +50,55 @@ export function getBest(count){
   return bestMove !== null ? Number(bestMove) : null;
 }
 
+export function blockNeeded(squares){
+  const combinations= [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+  for(const [a,b,c] of combinations){
+    const line = [squares[a], squares[b], squares[c]];
+    const aiWin = line.filter(s => s === 'O').length;
+    const empty = line.filter(s => s === null).length;
+    if(aiWin == 2 && empty == 1){
+      return [a,b,c];
+    }
+  }
+  return null;
+}
+
+export function checkForkWins(squares){
+  const combos = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+  let wins = 0;
+  for(const [a,b,c] of combos){
+    let row = [squares[a], squares[b], squares[c]];
+    let playerWin = row.filter(s => s === 'X').length;
+    let empty = row.filter(s => s === null).length;
+
+    if(playerWin === 2 && empty === 1){
+      wins++;
+    }
+  }
+  return Number(wins);
+}
+
+export function isFork(squares){
+  for(let i = 0; i < 9; i ++){
+    if(squares[i] === null){
+      const check = [...squares];
+      check[i] = 'X';
+      console.log("This is the X placement: " + i);
+      if(checkForkWins(check) >= 2){
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function isForkTwo(squares){
+  if(checkForkWins(squares) >= 2){
+    return true;
+  }
+  return false;
+}
+
 export function regularOption(squares){
   let count = {};
   if(squares[4] === null){
@@ -89,6 +122,10 @@ export function chooseMove(squares){
   const blocks = checkBlock(squares);
   const wins = checkWins(squares);
 
+  if(squares[4] === null){
+    return 4;
+  }
+
   // Can AI WIN and BLOCK?
   for(let key in wins){
     if(blocks[key]){
@@ -111,6 +148,27 @@ export function chooseMove(squares){
       return Number(Object.keys(blocks)[0]);
     }
   }
+  
+  
+  // Prevent forks
+  for(let i = 0; i < 9; i ++){
+    if(squares[i] === null){
+      const test = [...squares];
+      test[i] = 'O';
+      // console.log("This is O placement: " + i);
+      // check if O can win first
+      // console.log("This is the O placement: " + i);
+      const win = blockNeeded(test);
+      if(win !== null){
+        const block = win.filter(w => test[w] === null);
+        // console.log("This is where you need to block O: " + block);
+        test[block] = 'X';
+        if(!isForkTwo(test)){
+          return i;
+        }
+      }
+    }
+  }
 
   // Regular Move
   const nextMove = regularOption(squares);
@@ -118,12 +176,13 @@ export function chooseMove(squares){
     return nextMove;
   }
 
+  /*
   // Random option fallback
   for(let i = 0; i < 9; i ++){
     if(squares[i] === null){
       return i;
     }
-  }
+  }*/
 
   // buggy code
   return null;
@@ -139,16 +198,7 @@ export function checkDraw(squares){
 }
 
 export function checkWinner(squares){
-  const combinations= [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-  ];
+  const combinations= [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
 
   for(let i=0; i < combinations.length; i ++){
     const[a,b,c] = combinations[i];
