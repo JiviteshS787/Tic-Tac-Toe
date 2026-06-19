@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './styles.css'
 
+// Check possile future wins granted current grid
 export function checkWins(squares){
     let count = {};
     const combinations= [
@@ -26,6 +27,7 @@ export function checkWins(squares){
   return count;
 }
 
+// Check possible future blocks granted current grid
 export function checkBlock(squares){
     let count={};
     const combinations= [
@@ -48,9 +50,11 @@ export function checkBlock(squares){
         count[a] = (count[a] || 0) + 1;
     }
   }
+  return count;
 }
 
-export function bestBlock(count){
+// Check best possible move for wins/blocks
+export function getBest(count){
   let bestMove = null;
   let max = -1;
   for(let key in count){
@@ -59,66 +63,26 @@ export function bestBlock(count){
       bestMove = key;
     }
   }
-  return bestMove !== null ? bestMove : null;
+  return bestMove !== null ? Number(bestMove) : null;
 }
 
-export function possibleWins(squares, b, c){
-  let checkBestMove = [...squares];
-  let count = {};
-  const moves;
-  const maxPossibleWins = -1;
-  if(squares[b] === null && squares[c] === null){
-    // Check b side
-    checkBestMove[b] = 'O';
-    moves = checkWins(checkBestMove);
-    if(Object.keys(moves).length > 0 && Object.keys(moves).length > maxPossibleWins){
-      maxPossibleWins = Object.keys(moves).length;
-    }
-    checkBestMoves[b] = null;
-    count[b] = Number(count[b])>maxPossibleWins?maxPossibleWins:count[b];
-    maxPossibleWins = -1;
-    
-    // Check c side
-    checkBestMove[c] = 'O';
-    moves = checkWins(checkBestMove);
-    if(Object.keys(moves).length > 0 && Object.keys(moves).length > maxPossibleWins){
-      maxPossibleWins = Object.keys(moves).length;
-    }
-    checkBestMoves[c] = null;
-    count[c] = Number(count[c])>maxPossibleWins?maxPossibleWins:count[c];
-
-    return 
-  }
-}
-
-//Work on this
 export function regularOption(squares){
-  let checkBestMove = [...squares];
-  const moves;
-  const maxPossibleWins=-1;
-  const combinations= [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-  ];
+  let count = {};
   if(squares[4] === null){
     return 4;
   }
-  for(let i = 0; i < combinations.length; i++){
-    let [a,b,c] = combinations[i];
-    if(squares[a] === 'O'){
-      possibleWins(squares, b, c);
-    }else if(combinations[b] === 'O'){
-      possibleWins(squares, a, c);
-    }else if(combinations[c] === 'O'){
-      possibleWins(squares, b, c);
+  for(let i = 0; i < 9; i ++){
+    if(squares[i] === null){
+      const test = [...squares];
+      test[i] = 'O';
+
+      const moves = checkWins(test);
+      const futureWins = Object.values(moves).reduce((a,b)=>a+b, 0);
+
+      count[i] = futureWins;
     }
   }
+  return getBest(count);
 }
 
 export function chooseMove(squares){
@@ -133,32 +97,36 @@ export function chooseMove(squares){
   }
 
   // Can AI WIN
-  if(Object.keys(wins).length > 0){
-    return Number(Object.keys(wins)[0]);
+  const bestWin = getBest(wins);
+  if(bestWin !== null){
+    return bestWin;
   }
 
   // Can AI BLOCK
   if(Object.keys(blocks).length > 0){
-    const bestOption = bestBlock(blocks);
+    const bestOption = getBest(blocks);
     if(bestOption !== null){
-      return Number(bestOption);
+      return bestOption;
     }else{
       return Number(Object.keys(blocks)[0]);
     }
   }
 
   // Regular Move
+  const nextMove = regularOption(squares);
+  if(nextMove!==null){
+    return nextMove;
+  }
 
-}
-
-export function playAI(squares){
-    let randomChoose = Math.floor(Math.random()*9);
-    const newSquares = [... squares];
-    while(newSquares[randomChoose] !== null){
-        randomChoose = Math.floor(Math.random()*9);
+  // Random option fallback
+  for(let i = 0; i < 9; i ++){
+    if(squares[i] === null){
+      return i;
     }
-    newSquares[randomChoose] = 'O';
-    return newSquares;
+  }
+
+  // buggy code
+  return null;
 }
 
 export function checkDraw(squares){
@@ -204,39 +172,65 @@ export function Reset({onResetClick}){
   </>
 }
 
-export default function Board(){
-  const [xIsNext, setXIsNext] = useState(true);
+export default function Board({playerStarts}){
+  const [xIsNext, setXIsNext] = useState(playerStarts);
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [AIMode, setAIMode] = useState(true);
+  const timerRef = useRef(null);
+
+  function resetGame() {
+    clearTimeout(timerRef.current);
+    setSquares(Array(9).fill(null));
+    setXIsNext(playerStarts);
+}
 
   function handleClick(i){
-    if(squares[i] === null && !checkWinner(squares) && !checkDraw(squares)){
-        const nextSquares = [... squares];
+    if(squares[i] === null && !checkWinner(squares) && !checkDraw(squares) && xIsNext){
+      const nextSquares = [... squares];
       
-        nextSquares[i] = 'X';
+      nextSquares[i] = 'X';
 
-        const status = checkWinner(nextSquares);
-        const draw = checkDraw(nextSquares) && !status;
+      const status = checkWinner(nextSquares);
+      const draw = checkDraw(nextSquares) && !status;
 
-        setSquares(nextSquares);
+      setSquares(nextSquares);
+      setXIsNext(false);
+      /*
+      if(status || draw){
+          return;
+      }*/
 
-        if(status || draw){
-            return;
-        }
-
-        setXIsNext(false); //Edit here, !xIsNext
-
-        if(AIMode){
-            setTimeout(() => {
-                const aiMove = playAI(nextSquares);
-                if(!checkWinner(nextSquares) && !checkDraw(nextSquares)) {
-                    setSquares(aiMove);
-                    setXIsNext(true);
-                }
-            }, 400); //Edit here, !xIsNext
-        }
+      //setXIsNext(false); //Edit here, !xIsNext
     }
   }
+
+  useEffect(() => {
+  const status = checkWinner(squares);
+  const draw = checkDraw(squares) && !status;
+
+  // stop if game is over or it's X's turn
+  if (status || draw || xIsNext){
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    return;
+  }
+
+  timerRef.current = setTimeout(() => {
+    const move = chooseMove(squares);
+
+    if (move === null){
+      return;
+    }
+    const aiSquares = [...squares];
+    aiSquares[move] = 'O';
+
+    setSquares(aiSquares);
+    setXIsNext(true);
+  }, 400);
+
+  return () => clearTimeout(timerRef.current);
+}, [squares, xIsNext]);
 
   const status = checkWinner(squares);
   let winner;
@@ -249,8 +243,8 @@ export default function Board(){
   const draw = checkDraw(squares) && !status;
 
   return<>
-    <div className="status">{draw? 'Draw' : winner}</div>
     <div className="background">
+      <div className="status">{draw? 'Draw' : winner}</div>
       <div className="boardRow"> 
         <Square value={squares[0]} onSquareClick = {() => handleClick(0)} highlight={status?.includes(0)}/>
         <Square value={squares[1]} onSquareClick = {() => handleClick(1)} highlight={status?.includes(1)}/>
@@ -266,11 +260,8 @@ export default function Board(){
         <Square value={squares[7]} onSquareClick = {() => handleClick(7)} highlight={status?.includes(7)}/>
         <Square value={squares[8]} onSquareClick = {() => handleClick(8)} highlight={status?.includes(8)}/>
       </div>
+      <Reset onResetClick={resetGame} />
     </div>
-    <Reset onResetClick={() => {
-        setSquares(Array(9).fill(null));
-        setXIsNext(true);
-      }} />
   </>
 
 
