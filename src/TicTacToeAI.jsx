@@ -62,8 +62,40 @@ export function bestBlock(count){
   return bestMove !== null ? bestMove : null;
 }
 
+export function possibleWins(squares, b, c){
+  let checkBestMove = [...squares];
+  let count = {};
+  const moves;
+  const maxPossibleWins = -1;
+  if(squares[b] === null && squares[c] === null){
+    // Check b side
+    checkBestMove[b] = 'O';
+    moves = checkWins(checkBestMove);
+    if(Object.keys(moves).length > 0 && Object.keys(moves).length > maxPossibleWins){
+      maxPossibleWins = Object.keys(moves).length;
+    }
+    checkBestMoves[b] = null;
+    count[b] = Number(count[b])>maxPossibleWins?maxPossibleWins:count[b];
+    maxPossibleWins = -1;
+    
+    // Check c side
+    checkBestMove[c] = 'O';
+    moves = checkWins(checkBestMove);
+    if(Object.keys(moves).length > 0 && Object.keys(moves).length > maxPossibleWins){
+      maxPossibleWins = Object.keys(moves).length;
+    }
+    checkBestMoves[c] = null;
+    count[c] = Number(count[c])>maxPossibleWins?maxPossibleWins:count[c];
+
+    return 
+  }
+}
+
 //Work on this
 export function regularOption(squares){
+  let checkBestMove = [...squares];
+  const moves;
+  const maxPossibleWins=-1;
   const combinations= [
     [0,1,2],
     [3,4,5],
@@ -79,8 +111,12 @@ export function regularOption(squares){
   }
   for(let i = 0; i < combinations.length; i++){
     let [a,b,c] = combinations[i];
-    if(combinations[a] === 'O' || combinations[b] === 'O' || combinations[c] === 'O'){
-
+    if(squares[a] === 'O'){
+      possibleWins(squares, b, c);
+    }else if(combinations[b] === 'O'){
+      possibleWins(squares, a, c);
+    }else if(combinations[c] === 'O'){
+      possibleWins(squares, b, c);
     }
   }
 }
