@@ -1,9 +1,8 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import Board from './TicTacToe.jsx'
+import Board from './TicTacToeAI.jsx'
 
-/*
 function App(){
   const [gameStarted, setGameStarted] = useState(false);
   const [playerStarts, setPlayerStarts] = useState(true);
@@ -25,10 +24,10 @@ function App(){
     );
   }
   return(<Board playerStarts = {playerStarts}/>);
-}*/
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Board />
+    <App />
   </StrictMode>
 );
